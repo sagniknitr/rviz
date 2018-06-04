@@ -35,8 +35,15 @@
 #include <QObject>  // NOLINT
 
 #ifndef Q_MOC_RUN
+#ifdef __APPLE__
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wkeyword-macro"
+#endif
 #include <OgreVector3.h>
 #include <OgreColourValue.h>
+#ifdef __APPLE__
+# pragma clang diagnostic pop
+#endif
 
 #include "sensor_msgs/msg/point_cloud2.hpp"
 
@@ -123,10 +130,26 @@ public:
     (void) out_props;
   }
 
+  /**
+ * \brief Hide properties that are currently not in use.
+ */
+  virtual void hideUnusedProperties() {}
+
+  // class_id and description are required to be used with rviz_common::PluginlibFactory
+  QString getClassId() const {return class_id_;}
+  QString getDescription() const {return description_;}
+  void setClassId(const QString & class_id) {class_id_ = class_id;}
+  void setDescription(const QString & description) {description_ = description;}
+
 Q_SIGNALS:
   /** @brief Subclasses should emit this signal whenever they think the points should be re-transformed.
    */
   void needRetransform();
+
+protected:
+  // class_id and description are required to be used with rviz_common::PluginlibFactory
+  QString class_id_;
+  QString description_;
 };
 
 }  // namespace rviz_default_plugins

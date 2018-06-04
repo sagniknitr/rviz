@@ -34,7 +34,11 @@
 #include <memory>
 #include <string>
 
-#ifdef _WIN32
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wunused-parameter"
+# pragma GCC diagnostic ignored "-Wpedantic"
+#else
 # pragma warning(push)
 # pragma warning(disable : 4996)
 #endif
@@ -45,7 +49,9 @@
 #include <OgreSceneManager.h>
 #include <OgreVector3.h>
 
-#ifdef _WIN32
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#else
 # pragma warning(pop)
 #endif
 
@@ -87,8 +93,8 @@ void ArrowMarker::onNewMessage(
   if (!arrow_) {
     arrow_ = std::make_unique<rviz_rendering::Arrow>(context_->getSceneManager(), scene_node_);
     setDefaultProportions();
-    handler_.reset(
-      new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id), context_));
+    handler_ = rviz_common::interaction::createSelectionHandler<MarkerSelectionHandler>(
+      this, MarkerID(new_message->ns, new_message->id), context_);
     handler_->addTrackedObjects(arrow_->getSceneNode());
   }
 

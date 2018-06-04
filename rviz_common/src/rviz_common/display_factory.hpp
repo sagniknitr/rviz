@@ -35,7 +35,7 @@
 #include <QSet>
 #include <QString>
 
-#include "./pluginlib_factory.hpp"
+#include "rviz_common/factory/pluginlib_factory.hpp"
 #include "rviz_common/display.hpp"
 
 namespace rviz_common

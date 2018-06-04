@@ -30,8 +30,23 @@
 
 #include "text_view_facing_marker.hpp"
 
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wunused-parameter"
+# pragma GCC diagnostic ignored "-Wpedantic"
+#else
+# pragma warning(push)
+# pragma warning(disable : 4996)
+#endif
+
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
+
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#else
+# pragma warning(pop)
+#endif
 
 #include "marker_selection_handler.hpp"
 #include "rviz_common/display_context.hpp"
@@ -69,8 +84,8 @@ void TextViewFacingMarker::onNewMessage(
       rviz_rendering::MovableText::H_CENTER, rviz_rendering::MovableText::V_CENTER);
     scene_node_->attachObject(text_);
 
-    handler_.reset(
-      new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id), context_));
+    handler_ = rviz_common::interaction::createSelectionHandler<MarkerSelectionHandler>(
+      this, MarkerID(new_message->ns, new_message->id), context_);
     handler_->addTrackedObject(text_);
   }
 

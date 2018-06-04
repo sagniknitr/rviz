@@ -32,7 +32,11 @@
 
 #include <string>
 
-#ifdef _WIN32
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wunused-parameter"
+# pragma GCC diagnostic ignored "-Wpedantic"
+#else
 # pragma warning(push)
 # pragma warning(disable : 4996)
 #endif
@@ -45,7 +49,9 @@
 #include <OgreTechnique.h>
 #include <OgreTextureManager.h>
 
-#ifdef _WIN32
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#else
 # pragma warning(pop)
 #endif
 
@@ -120,8 +126,8 @@ void MeshResourceMarker::onNewMessage(
 
     createMeshWithMaterials(new_message);
 
-    handler_.reset(new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id),
-      context_));
+    handler_ = rviz_common::interaction::createSelectionHandler<MarkerSelectionHandler>(
+      this, MarkerID(new_message->ns, new_message->id), context_);
     handler_->addTrackedObject(entity_);
   } else {
     // underlying mesh resource has not changed but if the color has then we need to update the

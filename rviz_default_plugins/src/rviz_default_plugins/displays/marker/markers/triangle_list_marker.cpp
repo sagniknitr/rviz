@@ -32,6 +32,15 @@
 
 #include <vector>
 
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wunused-parameter"
+# pragma GCC diagnostic ignored "-Wpedantic"
+#else
+# pragma warning(push)
+# pragma warning(disable : 4996)
+#endif
+
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
 #include <OgreManualObject.h>
@@ -39,9 +48,14 @@
 #include <OgreTextureManager.h>
 #include <OgreTechnique.h>
 
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#else
+# pragma warning(pop)
+#endif
+
 #include "marker_selection_handler.hpp"
 #include "../marker_display.hpp"
-#include "rviz_common/selection/selection_manager.hpp"
 #include "rviz_common/properties/status_property.hpp"
 #include "rviz_common/uniform_string_stream.hpp"
 #include "rviz_common/display_context.hpp"
@@ -146,9 +160,8 @@ void TriangleListMarker::initializeManualObject(
   material_->setReceiveShadows(false);
   material_->getTechnique(0)->setLightingEnabled(true);
   material_->setCullingMode(Ogre::CULL_NONE);
-
-  handler_.reset(new MarkerSelectionHandler(this, MarkerID(new_message->ns, new_message->id),
-    context_));
+  handler_ = rviz_common::interaction::createSelectionHandler<MarkerSelectionHandler>(
+    this, MarkerID(new_message->ns, new_message->id), context_);
 }
 
 void TriangleListMarker::updateManualObject(
@@ -193,9 +206,9 @@ bool TriangleListMarker::fillManualObjectAndDetermineAlpha(
     std::vector<Ogre::Vector3> corners(3);
     for (size_t c = 0; c < 3; c++) {
       corners[c] = Ogre::Vector3(
-        static_cast<const Ogre::Real>(points[i + c].x),
-        static_cast<const Ogre::Real>(points[i + c].y),
-        static_cast<const Ogre::Real>(points[i + c].z));
+        static_cast<Ogre::Real>(points[i + c].x),
+        static_cast<Ogre::Real>(points[i + c].y),
+        static_cast<Ogre::Real>(points[i + c].z));
     }
     Ogre::Vector3 normal = (corners[1] - corners[0]).crossProduct(corners[2] - corners[0]);
     normal.normalise();

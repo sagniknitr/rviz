@@ -35,6 +35,17 @@
     <message_type>sensor_msgs/Image</message_type>
   </class>
 
+  <class 
+    name="rviz/LaserScan"
+    type="rviz_default_plugins::displays::LaserScanDisplay"
+    base_class_type="rviz_common::Display"
+  >
+    <description>
+      Displays the data from a sensor_msgs::LaserScan message as points in the world, drawn as points, billboards, or cubes.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/LaserScan"&gt;More Information&lt;/a&gt;.
+    </description>
+    <message_type>sensor_msgs/LaserScan</message_type>
+  </class>
+
   <class
     name="rviz_default_plugins/PointCloud"
     type="rviz_default_plugins::displays::PointCloudDisplay"
@@ -108,6 +119,7 @@
     <description>
       Displays visualization_msgs::Marker messages. &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Marker"&gt;More Information&lt;/a&gt;.
     </description>
+    <message_type>visualization_msgs/Marker</message_type>
   </class>
 
   <class
@@ -143,6 +155,38 @@
       Drag the mouse with left, middle, or right buttons to change your viewpoint.
     </description>
   </class>
+
+  <class
+    name="rviz_default_plugins/PublishPoint"
+    type="rviz_default_plugins::tools::PointTool"
+    base_class_type="rviz_common::Tool"
+  >
+    <description>
+      Allows you to click on a point and publish it as a PointStamped message.
+    </description>
+  </class>
+
+  <class
+    name="rviz_default_plugins/Select"
+    type="rviz_default_plugins::tools::SelectionTool"
+    base_class_type="rviz_common::Tool"
+  >
+    <description>
+      Drag with the left button to select objects in the 3D scene.
+      Hold the Alt key to change viewpoint as in the Move tool.
+    </description>
+  </class>
+
+  <class
+          name="rviz_default_plugins/Measure"
+          type="rviz_default_plugins::tools::MeasureTool"
+          base_class_type="rviz_common::Tool"
+  >
+    <description>
+      Click onto two locations to measure their distance.
+    </description>
+  </class>
+
 
   <!-- View Controller plugins -->
 

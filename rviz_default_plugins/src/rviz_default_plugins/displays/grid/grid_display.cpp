@@ -37,6 +37,7 @@
 #ifndef _WIN32
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wunused-parameter"
+# pragma GCC diagnostic ignored "-Wpedantic"
 #endif
 
 #include <OgreSceneManager.h>
@@ -50,7 +51,7 @@
 #include "rviz_common/frame_manager_iface.hpp"
 #include "rviz_common/properties/parse_color.hpp"
 #include "rviz_common/properties/property.hpp"
-#include "rviz_common/selection/selection_manager.hpp"
+#include "rviz_common/interaction/selection_manager.hpp"
 #include "rviz_rendering/objects/grid.hpp"
 
 namespace rviz_default_plugins

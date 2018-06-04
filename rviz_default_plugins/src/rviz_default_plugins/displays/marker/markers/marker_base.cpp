@@ -33,7 +33,11 @@
 #include <memory>
 #include <string>
 
-#ifdef _WIN32
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wunused-parameter"
+# pragma GCC diagnostic ignored "-Wpedantic"
+#else
 # pragma warning(push)
 # pragma warning(disable : 4996)
 #endif
@@ -44,7 +48,9 @@
 #include <OgreSubEntity.h>
 #include <OgreSharedPtr.h>
 
-#ifdef _WIN32
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#else
 # pragma warning(pop)
 #endif
 
@@ -53,7 +59,6 @@
 #include "../marker_display.hpp"
 #include "marker_selection_handler.hpp"
 #include "rviz_common/display_context.hpp"
-#include "rviz_common/selection/selection_manager.hpp"
 #include "rviz_common/frame_manager_iface.hpp"
 #include "rviz_common/properties/status_property.hpp"
 

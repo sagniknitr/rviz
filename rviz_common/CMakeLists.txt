@@ -7,6 +7,9 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
 endif()
 
+option(EnableDisplayTests "EnableDisplayTests")
+set(DisplayTests "False" CACHE STRING "DisplayTestsVariable")
+
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic -Werror)
   # TODO(wjwwood): try to remove this -- currently needed to pass on CI
@@ -105,13 +108,14 @@ set(rviz_common_headers_to_moc
   include/rviz_common/render_panel.hpp
   src/rviz_common/scaled_image_widget.hpp
   src/rviz_common/screenshot_dialog.hpp
-  include/rviz_common/selection/selection_manager.hpp
-  include/rviz_common/selection/selection_manager_iface.hpp
+  include/rviz_common/interaction/selection_manager.hpp
+  include/rviz_common/interaction/selection_manager_iface.hpp
+  include/rviz_common/interaction/selection_renderer.hpp
   src/rviz_common/splash_screen.hpp
   # src/rviz_common/time_panel.hpp
   include/rviz_common/tool.hpp
   src/rviz_common/tool_manager.hpp
-  # src/rviz_common/tool_properties_panel.hpp
+  src/rviz_common/tool_properties_panel.hpp
   include/rviz_common/view_controller.hpp
   include/rviz_common/view_manager.hpp
   src/rviz_common/views_panel.hpp
@@ -182,13 +186,16 @@ set(rviz_common_source_files
   src/rviz_common/ros_integration/ros_node_storage.cpp
   src/rviz_common/scaled_image_widget.cpp
   src/rviz_common/screenshot_dialog.cpp
-  # src/rviz_common/selection_panel.cpp
-  src/rviz_common/selection/selection_handler.cpp
-  src/rviz_common/selection/selection_manager.cpp
+  src/rviz_common/selection_panel.cpp
+  src/rviz_common/interaction/handler_manager.cpp
+  src/rviz_common/interaction/selection_handler.cpp
+  src/rviz_common/interaction/selection_manager.cpp
+  src/rviz_common/interaction/selection_renderer.cpp
+  src/rviz_common/interaction/view_picker.cpp
   src/rviz_common/splash_screen.cpp
   # src/rviz_common/time_panel.cpp
   src/rviz_common/tool_manager.cpp
-  # src/rviz_common/tool_properties_panel.cpp
+  src/rviz_common/tool_properties_panel.cpp
   src/rviz_common/tool.cpp
   src/rviz_common/uniform_string_stream.cpp
   src/rviz_common/view_controller.cpp
@@ -257,6 +264,7 @@ ament_export_dependencies(
   tf2_geometry_msgs
   tf2_ros
 )
+ament_export_include_directories(include)
 
 install(
   TARGETS rviz_common
@@ -281,8 +289,7 @@ install(
   DESTINATION "share/${PROJECT_NAME}"
 )
 
-# TODO(wjwwood): reenable tests for Windows after resolving building problems
-if(BUILD_TESTING AND NOT WIN32)
+if(BUILD_TESTING)
   # TODO(wjwwood): replace this with ament_lint_auto() and/or add the copyright linter back
   find_package(ament_cmake_cppcheck REQUIRED)
   find_package(ament_cmake_cpplint REQUIRED)
@@ -317,15 +324,6 @@ if(BUILD_TESTING AND NOT WIN32)
     )
   endif()
 
-  # TODO(wjwwood): reenable this test when it can be run on CI
-  # ament_add_gtest(rviz_common_display_test
-  #   test/display_test.cpp
-  #   test/mock_display.cpp
-  #   test/mock_display_group.cpp)
-  # if(TARGET rviz_common_display_test)
-  #   target_link_libraries(rviz_common_display_test rviz_common)
-  # endif()
-
   ament_add_gtest(rviz_common_property_test
     test/property_test.cpp
     test/mock_property_change_receiver.cpp)
@@ -343,6 +341,49 @@ if(BUILD_TESTING AND NOT WIN32)
     test/ros_node_abstraction_test.cpp)
   if(TARGET rviz_common_ros_node_abstraction_test)
     target_link_libraries(rviz_common_ros_node_abstraction_test rviz_common)
+  endif()
+
+  if(DEFINED ENV{DISPLAY})
+    set(DISPLAYPRESENT TRUE)
+  endif()
+
+  if(APPLE OR DISPLAYPRESENT OR EnableDisplayTests STREQUAL "True")
+    message(STATUS "Enabling tests requiring a display")
+
+    ament_add_gmock(selection_manager_test
+      test/interaction/selection_manager_test.cpp
+      test/interaction/mock_selection_renderer.hpp
+      test/interaction/selection_test_fixture.hpp
+      test/display_context_fixture.cpp)
+    if(TARGET selection_manager_test)
+      target_link_libraries(selection_manager_test
+        rviz_common
+        rviz_ogre_vendor::OgreMain
+        rviz_ogre_vendor::OgreOverlay)
+    endif()
+
+    ament_add_gmock(selection_handler_test
+      test/interaction/selection_handler_test.cpp
+      test/interaction/selection_test_fixture.hpp
+      test/display_context_fixture.cpp)
+    if(TARGET selection_handler_test)
+      target_link_libraries(selection_handler_test
+        rviz_common
+        rviz_ogre_vendor::OgreMain
+        rviz_ogre_vendor::OgreOverlay)
+    endif()
+
+    ament_add_gtest(rviz_common_display_test
+      test/display_test.cpp
+      test/mock_display.cpp
+      test/mock_display_group.cpp)
+    if(TARGET rviz_common_display_test)
+      target_link_libraries(rviz_common_display_test
+        rviz_common
+        Qt5::Widgets)
+    ament_target_dependencies(rviz_common_display_test
+      rviz_yaml_cpp_vendor)
+    endif()
   endif()
 endif()
 

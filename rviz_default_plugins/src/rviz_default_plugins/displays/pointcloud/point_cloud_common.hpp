@@ -44,20 +44,24 @@
 
 //# include <message_filters/time_sequencer.h>
 
-// TODO(wjwwood): revist file when pluginlib is available
-//# include <pluginlib/class_loader.h>
+#include "pluginlib/class_loader.hpp"
 #include "rclcpp/clock.hpp"
 #include "rclcpp/time.hpp"
 
 #include "sensor_msgs/msg/point_cloud.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 
-#include "rviz_common/selection/selection_manager.hpp"
-#include "point_cloud_transformer.hpp"
-#include "point_cloud_selection_handler.hpp"
+#include "rviz_common/interaction/forwards.hpp"
+#include "rviz_common/interaction/selection_manager.hpp"
 #include "rviz_common/properties/color_property.hpp"
 #include "rviz_rendering/objects/point_cloud.hpp"
-#include "rviz_common/selection/forwards.hpp"
+
+#include "point_cloud_transformer.hpp"
+#include "point_cloud_selection_handler.hpp"
+
+#include "./point_cloud_selection_handler.hpp"
+#include "./point_cloud_transformer.hpp"
+#include "./point_cloud_transformer_factory.hpp"
 
 #endif
 
@@ -95,6 +99,9 @@ struct CloudInfo
   // clear the point cloud, but keep selection handler around
   void clear();
 
+  void setSelectable(
+    bool selectable, float selection_box_size, rviz_common::DisplayContext * context);
+
   rclcpp::Time receive_time_;
 
   Ogre::SceneManager * manager_;
@@ -130,11 +137,9 @@ public:
   typedef std::list<CloudInfoPtr> L_CloudInfo;
 
   explicit PointCloudCommon(rviz_common::Display * display);
-  ~PointCloudCommon() override;
 
   void initialize(rviz_common::DisplayContext * context, Ogre::SceneNode * scene_node);
 
-  void fixedFrameChanged();
   void reset();
   void update(float wall_dt, float ros_dt);
 
@@ -154,7 +159,8 @@ public:
   rviz_common::properties::EnumProperty * style_property_;
   rviz_common::properties::FloatProperty * decay_time_property_;
 
-  void setAutoSize(bool auto_size);
+// TODO(anhosi): check if still needed when migrating DepthCloud
+//  void setAutoSize(bool auto_size);
 
 public Q_SLOTS:
   void causeRetransform();
@@ -194,6 +200,26 @@ private:
   void setPropertiesHidden(const QList<rviz_common::properties::Property *> & props, bool hide);
   void fillTransformerOptions(rviz_common::properties::EnumProperty * prop, uint32_t mask);
 
+  void insertNewClouds(float point_decay_time, const rclcpp::Time & now);
+  float getSizeForRenderMode(const rviz_rendering::PointCloud::RenderMode & mode);
+
+  void updateTransformerProperties();
+
+  /**
+   * Instead of deleting obsolete cloud infos, we just clear them
+   * and put them into obsolete_cloud_infos, so active selections are preserved
+   *
+   * If decay time == 0, clear the old cloud when we get a new one.
+   * Otherwise, clear all the outdated ones
+   */
+  void collectObsoleteCloudInfos(float point_decay_time, const rclcpp::Time & now);
+
+  /// Garbage-collect old point clouds that don't have an active selection
+  void removeObsoleteCloudInfos();
+
+  bool cloudInfoIsDecayed(
+    CloudInfoPtr cloud_info, float point_decay_time, const rclcpp::Time & now);
+
   D_CloudInfo cloud_infos_;
 
   Ogre::SceneNode * scene_node_;
@@ -220,8 +246,7 @@ private:
   bool new_color_transformer_;
   bool needs_retransform_;
 
-  // TODO(Martin-Idel-SI): revisit once pluginlib is available
-  // pluginlib::ClassLoader<PointCloudTransformer> * transformer_class_loader_;
+  std::unique_ptr<PointCloudTransformerFactory> transformer_factory_;
 
   rviz_common::Display * display_;
   rviz_common::DisplayContext * context_;

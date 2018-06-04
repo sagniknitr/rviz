@@ -37,11 +37,21 @@
 #include <vector>
 
 #ifndef Q_MOC_RUN
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wunused-parameter"
+# pragma GCC diagnostic ignored "-Wpedantic"
+#endif
+
 #include <OgreVector3.h>
 #include <OgreQuaternion.h>
 #include <OgreAny.h>
 #include <OgreMaterial.h>
 #include <OgreSharedPtr.h>
+
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
 #endif
 
 #include <QObject>
@@ -51,7 +61,7 @@
 
 #include "robot_element_base_class.hpp"
 #include "rviz_rendering/objects/object.hpp"
-#include "rviz_common/selection/forwards.hpp"
+#include "rviz_common/interaction/forwards.hpp"
 
 namespace Ogre
 {

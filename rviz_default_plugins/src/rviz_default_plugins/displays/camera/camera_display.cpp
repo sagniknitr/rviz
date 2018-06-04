@@ -33,6 +33,11 @@
 #include <memory>
 #include <string>
 
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wunused-parameter"
+# pragma GCC diagnostic ignored "-Wpedantic"
+#endif
 #include <OgreManualObject.h>
 #include <OgreMaterialManager.h>
 #include <OgreRectangle2D.h>
@@ -44,6 +49,9 @@
 #include <OgreViewport.h>
 #include <OgreTechnique.h>
 #include <OgreCamera.h>
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
 
 #include "rviz_rendering/objects/axes.hpp"
 #include "rviz_rendering/render_window.hpp"
@@ -188,8 +196,11 @@ void CameraDisplay::setupRenderPanel()
   render_panel_ = std::make_unique<rviz_common::RenderPanel>();
   render_panel_->resize(640, 480);
   render_panel_->initialize(context_, true);
-
   setAssociatedWidget(render_panel_.get());
+
+  static int count = 0;
+  render_panel_->getRenderWindow()->setObjectName(
+    "CameraDisplayRenderWindow" + QString::number(count++));
 }
 
 std::unique_ptr<Ogre::Rectangle2D> CameraDisplay::createScreenRectangle(
